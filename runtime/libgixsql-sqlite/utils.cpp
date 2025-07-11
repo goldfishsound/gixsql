@@ -19,12 +19,15 @@
 */
 
 
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <string.h>
 #include <stdbool.h>
-#include <malloc.h>
+
 #include <math.h>
 #include <algorithm> 
 #include <cctype>
