@@ -2,10 +2,12 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([gixsql], ['1.0.21dev'], [m.ridoni@mediumgray.info])
+AC_INIT([gixsql], [1.0.21dev], [m.ridoni@mediumgray.info])
+#AC_INIT([gixsql], ['1.0.21dev'], [m.ridoni@mediumgray.info])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE([1.9.6 -Wall -Werror dist-bzip2 subdir-objects])
+AM_INIT_AUTOMAKE([1.9 foreign -Wall -Werror dist-bzip2 subdir-objects])
+#AM_INIT_AUTOMAKE([1.9.6 -Wall -Werror dist-bzip2 subdir-objects])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -51,22 +53,32 @@ build_mac=no
 case "${host_os}" in
     linux*)
         build_linux=yes
+        HOST_CPP_LIB="-lstdc++fs"
         ;;
     cygwin*|mingw*)
         build_windows=yes
+        HOST_CPP_LIB="-lstdc++fs"
         ;;
     darwin*)
         build_mac=yes
+        HOST_CPP_LIB="-lc++"
+         
+        # Override malloc detection for macOS
+        AC_DEFINE([HAVE_MALLOC_H], [0], [Define to 1 if you have the <malloc.h> header file.])
+        AC_DEFINE([HAVE_MALLOC], [0], [Define to 1 if your system has a GNU libc compatible 'malloc' function.])
         ;;
     *)
         AC_MSG_ERROR(["OS $host_os is not supported"])
         ;;
 esac
 
-# Pass the conditionals to automake
+# Export platform conditionals to Automake
 AM_CONDITIONAL([BUILD_LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([BUILD_WINDOWS], [test "$build_windows" = "yes"])
 AM_CONDITIONAL([BUILD_OSX], [test "$build_mac" = "yes"])
+
+# Export C++ stdlib flag for platform
+AC_SUBST([HOST_CPP_LIB])
 
 # Checks for libraries.
 PKG_PROG_PKG_CONFIG
@@ -135,7 +147,7 @@ AS_IF([test "$enable_sqlite" != "no"], [enable_sqlite=yes], [enable_sqlite=no])
 # Check if the driver ID is valid
 AS_IF([test "$with_default_driver" == "none" || test "$with_default_driver" == "odbc" || test "$with_default_driver" == "mysql" || test "$with_default_driver" == "pgsql" ] || test "$with_default_driver" == "oracle" ] || test "$with_default_driver" == "sqlite" ],
 		[],
-		[AC_MSG_ERROR([invalid DBMS driver id \"${with_default_driver}\".])]
+    AC_MSG_ERROR([invalid DBMS driver id "${with_default_driver}"])
 )
 
 
