@@ -25,3 +25,8 @@ config.h
 /deploy/checklist.txt
 /redist/msvc/x86
 /redist/msvcrt/x86
+**/*.cache
+examples/
+libtool
+extra_files.mk 
+Makefile
