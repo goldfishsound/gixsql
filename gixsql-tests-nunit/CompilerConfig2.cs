@@ -2,6 +2,8 @@
 using System;
 using System.IO;
 using System.Xml;
+using System.Runtime.InteropServices;
+
 
 namespace gixsql_tests
 {
@@ -28,7 +30,12 @@ namespace gixsql_tests
 
         public static CompilerConfig2 init(XmlElement xc)
         {
-            bool isWindows = !File.Exists(@"/proc/sys/kernel/ostype");
+            // bool isWindows = !File.Exists(@"/proc/sys/kernel/ostype");
+
+
+            bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            bool isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
             try
             {
@@ -69,6 +76,8 @@ namespace gixsql_tests
                 else
                     cc.gixsql_link_lib_dir_path = cc.gixsql_lib_path;
 
+                Console.WriteLine("*****************************************************");
+                Console.WriteLine("gixsql_link_lib_dir_path: " + cc.gixsql_link_lib_dir_path);
                 cc.gixsql_link_lib_name = cc.IsVsBased ? "libgixsql.lib" : "libgixsql.a";
 
                 if (!File.Exists(Path.Combine(cc.gixsql_link_lib_dir_path, cc.gixsql_link_lib_name))) throw new Exception(Path.Combine(cc.gixsql_link_lib_dir_path, cc.gixsql_link_lib_name));
