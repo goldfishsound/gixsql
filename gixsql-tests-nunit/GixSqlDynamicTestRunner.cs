@@ -14,6 +14,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+
 
 namespace gixsql_tests
 {
@@ -28,7 +30,12 @@ namespace gixsql_tests
         private bool except = false;
 
         //private static bool factories_init = false;
-        private static bool isWindows = !File.Exists(@"/proc/sys/kernel/ostype");
+                    // bool isWindows = !File.Exists(@"/proc/sys/kernel/ostype");
+
+
+            bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            bool isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
         private static int cur_index = 1;
 
@@ -263,6 +270,7 @@ namespace gixsql_tests
                     else
                         gixpp_args = "-c " + gixpp_args;
 
+                    // Run preprocessor in shell.
                     var r1 = Task.Run(async () =>
                     {
                         return await Cli.Wrap(_shell)
@@ -347,15 +355,15 @@ namespace gixsql_tests
                         else
                             cobc_args = $"{cc.cobc_exe} {opt_exe} -I. -I{cc.gixsql_copy_path} {pp_file} -L{cc.gixsql_link_lib_dir_path} -l{cc.gixsql_link_lib_lname}";
 
-                        if (TestDataProvider.TestVerbose)
-                        {
-                            Console.WriteLine($"[cobc]: {TestDataProvider.Shell} {cobc_args}");
-                        }
-
-
                         if (!td.CompilerConfiguration.IsVsBased)
                         {
                             cobc_args += " -lstdc++ -lfmt";
+                        }
+
+                        // Must be a better way to do this, but it works.
+                        if (isMacOS)
+                        {
+                            cobc_args += "  -L/opt/homebrew/lib";
                         }
 
                         if (td.AdditionalCompileParams != String.Empty)
@@ -366,6 +374,11 @@ namespace gixsql_tests
 
                         cobc_args = _shell_args + " " + cobc_args;
 
+                        if (TestDataProvider.TestVerbose)
+                        {
+                            Console.WriteLine($"[cobc]: {TestDataProvider.Shell} {cobc_args}");
+                        }
+                        
                         return await Cli.Wrap(_shell)
                            .WithArguments(cobc_args)
                            .WithEnvironmentVariables(new Dictionary<string, string>
@@ -519,7 +532,7 @@ namespace gixsql_tests
                         exe = TestDataProvider.MemCheck;
                     }
                 }
-
+                // TODO: Investigate why TSQL042A is giving error
                 var res = Task.Run(async () =>
                 {
                     return await Cli.Wrap(exe)
