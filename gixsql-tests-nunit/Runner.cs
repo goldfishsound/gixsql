@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Mono.Options;
 using System.IO;
+using System.Linq;  // <-- Needed for Count()
 
 namespace gixsql_tests_nunit
 {
