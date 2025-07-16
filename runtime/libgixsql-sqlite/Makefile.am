@@ -6,8 +6,4 @@ libgixsql_sqlite_la_SOURCES = DbInterfaceManagerSQLite.cpp  DbInterfaceSQLite.cp
 
 libgixsql_sqlite_la_CXXFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/runtime/libgixsql -std=c++17 -DSPDLOG_FMT_EXTERNAL -DNDEBUG
 libgixsql_sqlite_la_LIBADD = 
-libgixsql_sqlite_la_LDFLAGS = -lfmt @HOST_CPP_LIB@ -no-undefined -avoid-version
-
-
-
-
+libgixsql_sqlite_la_LDFLAGS = -lfmt "@HOST_CPP_LIB@" -no-undefined -avoid-version
