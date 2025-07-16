@@ -10,4 +10,4 @@ libgixsql_la_SOURCES = Connection.cpp  ConnectionManager.cpp  Cursor.cpp  Cursor
 			GlobalEnv.h GlobalEnv.cpp
 
 libgixsql_la_CXXFLAGS = -std=c++17 -DSPDLOG_FMT_EXTERNAL -DNDEBUG -I$(top_srcdir)/libgixpp -I$(top_srcdir)/common
-libgixsql_la_LDFLAGS =  -lfmt @HOST_CPP_LIB@ -no-undefined -avoid-version
+libgixsql_la_LDFLAGS =  -lfmt "@HOST_CPP_LIB@" -no-undefined -avoid-version
