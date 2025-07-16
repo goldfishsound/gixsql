@@ -111,19 +111,24 @@ IDbManagerInterface* DbInterfaceFactory::getManagerInterface(std::string type)
 
 std::shared_ptr<IDbInterface> DbInterfaceFactory::load_dblib(const GlobalEnv* genv, const char *lib_id)
 {
-	char bfr[256];
 	std::shared_ptr<IDbInterface> dbi;
 	LIBHANDLE libHandle = NULL;
 	DBLIB_PROVIDER_FUNC dblib_provider;
 
+	char bfr[256];
 	sprintf(bfr, "libgixsql-");
 	strcat(bfr, lib_id);
-
 #if defined(_WIN32)
-
 	strcat(bfr, ".dll");
+#elif defined(__APPLE__)
+	strcat(bfr, ".dylib");
+#else
+	strcat(bfr, ".so");
+#endif
+
 	spdlog::debug(FMT_FILE_FUNC "loading DB provider: {}", __FILE__, __func__, bfr);
 
+#if defined(_WIN32)
 	libHandle = LoadLibrary(bfr);
 	spdlog::trace(FMT_FILE_FUNC "library handle is: {}", __FILE__, __func__, (void *) libHandle);
 
@@ -166,11 +171,10 @@ std::shared_ptr<IDbInterface> DbInterfaceFactory::load_dblib(const GlobalEnv* ge
 #endif
 	}
 
-#else
-
-	strcat(bfr, ".so");
+#elif defined(__APPLE__) || defined(__linux__)
+	// For Linux and macOS, we use dlopen to load the shared library.
+	// The library name is constructed based on the lib_id.
 	spdlog::debug(FMT_FILE_FUNC "loading DB provider: {}", __FILE__, __func__, bfr);
-
 	libHandle = dlopen(bfr, RTLD_NOW);
 	if (libHandle != NULL)
 	{
@@ -198,14 +202,14 @@ std::shared_ptr<IDbInterface> DbInterfaceFactory::load_dblib(const GlobalEnv* ge
 	else {
         	spdlog::error("ERROR while loading DB provider: {} ({})", bfr, dlerror());
 	}
-
+#else
+# error "Unsupported platform"
 #endif
 
+if (dbi != nullptr) {
 	dbi->native_lib_ptr = (void *) libHandle;
-
-	if (dbi != nullptr) {
-		dbi->init(genv, gixsql_logger);
-	}
+	dbi->init(genv, gixsql_logger);
+}
 	return dbi;
 }
 
