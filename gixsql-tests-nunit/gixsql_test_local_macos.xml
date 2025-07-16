@@ -12,8 +12,9 @@
 		<temp-dir>/tmp/gixsql-test</temp-dir>
 		<environment>
 			<variable key="GIXSQL_FIXUP_PARAMS" value="on" />
-			<!-- <variable key="DYLD_LIBRARY_PATH" value="/opt/homebrew/lib" /> -->
-			<!-- <variable key="LD_LIBRARY_PATH" value="/library/postgresql/17/lib" /> -->
+			<variable key="DYLD_LIBRARY_PATH" value="/opt/gixsql/lib:$DYLD_LIBRARY_PATH" />
+			<variable key="LD_LIBRARY_PATH" value="/opt/gixsql/bin:$LD_LIBRARY_PATH" />
+			 
 		</environment>
 	</global>
 
