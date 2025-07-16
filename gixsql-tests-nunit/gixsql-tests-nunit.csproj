@@ -212,6 +212,9 @@
   </ItemGroup>
 
   <ItemGroup>
+     <None Update="gixsql_test_local_macos.xml">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
     <None Update="gixsql_test_local_linux.xml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
