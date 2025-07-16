@@ -27,7 +27,6 @@
 #include <string>
 #include <cstring>
 #include <memory>
-#include <iostream>
 
 #if (defined(_WIN32) || defined(_WIN64)) && !defined(__MINGW32__)
 #include <io.h>
@@ -124,7 +123,6 @@ LIBGIXSQL_API int
 GIXSQLConnect(struct sqlca_t* st, void* d_data_source, int data_source_tl, void* d_connection_id, int connection_id_tl,
 	void* d_dbname, int dbname_tl, void* d_username, int username_tl, void* d_password, int password_tl)
 {
-	std::cout << "GIXSQLConnect called" << std::endl;
 	CHECK_LIB_INIT();
 
 	spdlog::debug(FMT_FILE_FUNC "GIXSQLConnect start", __FILE__, __func__);
@@ -142,50 +140,35 @@ GIXSQLConnect(struct sqlca_t* st, void* d_data_source, int data_source_tl, void*
 	data_source_info = get_hostref_or_literal(d_data_source, data_source_tl);
 	username = get_hostref_or_literal(d_username, username_tl);
 	password = get_hostref_or_literal(d_password, password_tl);
-	std::cout << "Data source info: " << data_source_info << std::endl;
-	std::cout << "Connection ID: " << connection_id << std::endl;
-	std::cout << "DB Name: " << dbname << std::endl;
-	std::cout << "Username: " << username << std::endl;	
-	std::cout << "Password: " << password << std::endl;
+
 	
 	sqlca_initialize(st);
-	std::cout << "SQLCA initialized" << std::endl;
 	trim(connection_id);
-	std::cout << "Trimmed connection ID: " << connection_id << std::endl;
 	
 	if (!connection_id.empty() && connection_manager.exists(connection_id)) {
 		spdlog::error("Connection already defined: {}", connection_id);
 		setStatus(st, NULL, DBERR_NO_ERROR);
-		std::cout << "Connection already defined: " << connection_id << std::endl;
 		return RESULT_FAILED;
 	}
-	std::cout << "Creating data source object" << std::endl;
 
 	std::shared_ptr<DataSourceInfo> data_source = std::make_shared<DataSourceInfo>();
 	int rc = data_source->init(data_source_info, dbname, username, password);
 	if (rc != 0) {
 		spdlog::error("Cannot initialize connection parameters, aborting, data source is [{}]", data_source_info);
 		setStatus(st, NULL, DBERR_CONN_INIT_ERROR);
-		std::cout << "Cannot initialize connection parameters, aborting, data source is [" << data_source_info << "]" << std::endl;
 		return RESULT_FAILED;
 	}
-	std::cout << "Data source initialized successfully" << std::endl;
 
 	std::string dbtype = data_source->getDbType();
-	std::cout << "Database type: " << dbtype << std::endl;
-	std::cout << "Global environment initialized: " << (__global_env != nullptr) << std::endl;
-	std::cout << "gixsql_logger initialized: " << (gixsql_logger != nullptr) << std::endl;
+	
 	std::shared_ptr<IDbInterface> dbi = DbInterfaceFactory::getInterface(dbtype, __global_env, gixsql_logger);
-	std::cout << "Getting database interface for type: " << dbtype << std::endl;
 	if (dbi == NULL) {
 		spdlog::error("Cannot initialize driver library, aborting, DB type is [{}]", dbtype);
 		setStatus(st, NULL, DBERR_CONN_INVALID_DBTYPE);
 		return RESULT_FAILED;
 	}
-	std::cout << "Driver library initialized successfully" << std::endl;
 
 	std::shared_ptr<IConnectionOptions> opts = std::make_shared<IConnectionOptions>();
-	std::cout << "Setting connection options" << std::endl;
 	opts->autocommit = get_autocommit(data_source);;
 	opts->fixup_parameters = get_fixup_params(data_source);
 	opts->client_encoding = get_client_encoding(data_source);
@@ -195,11 +178,6 @@ GIXSQLConnect(struct sqlca_t* st, void* d_data_source, int data_source_tl, void*
 	spdlog::trace(FMT_FILE_FUNC "Autocommit        : {}", __FILE__, __func__, (int)opts->autocommit);
 	spdlog::trace(FMT_FILE_FUNC "Fix up parameters : {}", __FILE__, __func__, opts->fixup_parameters);
 	spdlog::trace(FMT_FILE_FUNC "Client encoding   : {}", __FILE__, __func__, opts->client_encoding);
-	std::cout << "Connection string: " << data_source->get() << std::endl;
-	std::cout << "Data source info: " << data_source->dump() << std::endl;
-	std::cout << "Autocommit: " << (int)opts->autocommit << std::endl;
-	std::cout << "Fix up parameters: " << opts->fixup_parameters << std::endl;
-	std::cout << "Client encoding: " << opts->client_encoding << std::endl;
 
 	rc = dbi->connect(data_source, opts);
 	if (rc != DBERR_NO_ERROR) {
@@ -219,7 +197,6 @@ GIXSQLConnect(struct sqlca_t* st, void* d_data_source, int data_source_tl, void*
 	spdlog::debug(FMT_FILE_FUNC "connection success. connection id# = {}, connection id = [{}]", __FILE__, __func__, c->getId(), connection_id);
 
 	setStatus(st, NULL, DBERR_NO_ERROR);
-	std::cout << "Connection success. connection id# = " << c->getId() << ", connection id = [" << connection_id << "]" << std::endl;
 	return RESULT_SUCCESS;
 }
 
