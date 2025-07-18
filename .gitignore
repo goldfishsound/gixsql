@@ -30,3 +30,5 @@ examples/
 libtool
 extra_files.mk 
 Makefile
+.vscode/
+.DS_Store
